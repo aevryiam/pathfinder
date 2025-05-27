@@ -119,12 +119,20 @@ export default function Home() {
           </div>
 
           <div className="text-sm text-gray-800">
-            <p>Instructions:</p>
-            <ul className="list-disc list-inside">
-              <li>Click anywhere on the canvas to add nodes</li>
-              <li>Select a node and click "Add Edge" to create connections</li>
-              <li>Use the toggle buttons to select and change start/end nodes</li>
-              <li>Choose an algorithm and click "Run Algorithm" to find the path</li>
+            <p className="font-semibold">Instructions:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Click anywhere on the canvas to add nodes.</li>
+              <li>
+                <span className="font-semibold">How to Add Edges:</span>
+                <ol className="list-decimal list-inside ml-4">
+                  <li>Click a node to select it (it will be highlighted).</li>
+                  <li>Click the <span className="font-semibold">Add Edge</span> button.</li>
+                  <li>Click another node to connect to (you'll be prompted for the edge weight).</li>
+                  <li>The order does not matter; connecting Node 0 to Node 1 is the same as Node 1 to Node 0.</li>
+                </ol>
+              </li>
+              <li>Use the toggle buttons to select and change start/end nodes.</li>
+              <li>Choose an algorithm and click <span className="font-semibold">Run Algorithm</span> to find the path.</li>
             </ul>
           </div>
         </div>
