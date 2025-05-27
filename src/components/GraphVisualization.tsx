@@ -6,6 +6,8 @@ interface GraphVisualizationProps {
   edges: Edge[];
   setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
+  nextNodeId: number;
+  setNextNodeId: React.Dispatch<React.SetStateAction<number>>;
   onNodeClick?: (nodeId: string) => void;
   onEdgeClick?: (edgeId: string) => void;
 }
@@ -15,6 +17,8 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   edges,
   setNodes,
   setEdges,
+  nextNodeId,
+  setNextNodeId,
   onNodeClick,
   onEdgeClick,
 }) => {
@@ -25,12 +29,13 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 
   const addNode = (x: number, y: number) => {
     const newNode: Node = {
-      id: `node-${nodes.length}`,
+      id: `node-${nextNodeId}`,
       x,
       y,
-      label: `Node ${nodes.length}`,
+      label: `Node ${nextNodeId}`,
     };
     setNodes([...nodes, newNode]);
+    setNextNodeId(nextNodeId + 1);
   };
 
   const addEdge = (from: string, to: string, weight: number) => {

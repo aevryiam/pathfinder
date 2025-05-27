@@ -13,6 +13,7 @@ export default function Home() {
   const [result, setResult] = useState<PathFindingResult | null>(null);
   const [algorithm, setAlgorithm] = useState<'dijkstra' | 'astar'>('dijkstra');
   const [selectingStart, setSelectingStart] = useState<boolean>(true);
+  const [nextNodeId, setNextNodeId] = useState<number>(0);
 
   const handleNodeClick = (nodeId: string) => {
     if (selectingStart) {
@@ -144,6 +145,8 @@ export default function Home() {
               edges={edges}
               setNodes={setNodes}
               setEdges={setEdges}
+              nextNodeId={nextNodeId}
+              setNextNodeId={setNextNodeId}
               onNodeClick={handleNodeClick}
             />
           </div>
