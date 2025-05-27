@@ -1,5 +1,15 @@
 import { Graph, Node, Edge, PathFindingResult } from '../types/graph';
 
+// Helper to get all neighbors for a node in an undirected graph
+function getNeighbors(graph: Graph, nodeId: string): { neighbor: string; weight: number }[] {
+  return graph.edges
+    .filter(edge => edge.from === nodeId || edge.to === nodeId)
+    .map(edge => ({
+      neighbor: edge.from === nodeId ? edge.to : edge.from,
+      weight: edge.weight,
+    }));
+}
+
 export function dijkstra(graph: Graph, startNodeId: string, endNodeId: string): PathFindingResult {
   const distances: { [key: string]: number } = {};
   const previous: { [key: string]: string | null } = {};
@@ -32,28 +42,26 @@ export function dijkstra(graph: Graph, startNodeId: string, endNodeId: string): 
     unvisited.delete(current);
     visited.add(current);
 
-    // Update distances to neighbors
-    graph.edges
-      .filter(edge => edge.from === current || edge.to === current)
-      .forEach(edge => {
-        const neighbor = edge.from === current ? edge.to : edge.from;
-        if (!visited.has(neighbor)) {
-          const distance = distances[current] + edge.weight;
-          if (distance < distances[neighbor]) {
-            distances[neighbor] = distance;
-            previous[neighbor] = current;
-          }
+    // Update distances to all neighbors (undirected)
+    getNeighbors(graph, current).forEach(({ neighbor, weight }) => {
+      if (!visited.has(neighbor)) {
+        const distance = distances[current] + weight;
+        if (distance < distances[neighbor]) {
+          distances[neighbor] = distance;
+          previous[neighbor] = current;
         }
-      });
+      }
+    });
   }
 
   // Reconstruct path
   const path: string[] = [];
   let current = endNodeId;
-  while (current) {
+  while (current && previous[current] !== null) {
     path.unshift(current);
-    current = previous[current] || '';
+    current = previous[current]!;
   }
+  if (current === startNodeId) path.unshift(current);
 
   return {
     path: path.length > 1 ? path : [],
@@ -101,34 +109,32 @@ export function aStar(
     openSet.delete(current);
     closedSet.add(current);
 
-    // Check neighbors
-    graph.edges
-      .filter(edge => edge.from === current || edge.to === current)
-      .forEach(edge => {
-        const neighbor = edge.from === current ? edge.to : edge.from;
-        if (closedSet.has(neighbor)) return;
+    // Check all neighbors (undirected)
+    getNeighbors(graph, current).forEach(({ neighbor, weight }) => {
+      if (closedSet.has(neighbor)) return;
 
-        const tentativeGScore = gScore[current] + edge.weight;
+      const tentativeGScore = gScore[current] + weight;
 
-        if (!openSet.has(neighbor)) {
-          openSet.add(neighbor);
-        } else if (tentativeGScore >= gScore[neighbor]) {
-          return;
-        }
+      if (!openSet.has(neighbor)) {
+        openSet.add(neighbor);
+      } else if (tentativeGScore >= gScore[neighbor]) {
+        return;
+      }
 
-        cameFrom[neighbor] = current;
-        gScore[neighbor] = tentativeGScore;
-        fScore[neighbor] = gScore[neighbor] + heuristic(graph, neighbor, endNodeId);
-      });
+      cameFrom[neighbor] = current;
+      gScore[neighbor] = tentativeGScore;
+      fScore[neighbor] = gScore[neighbor] + heuristic(graph, neighbor, endNodeId);
+    });
   }
 
   // Reconstruct path
   const path: string[] = [];
   let current = endNodeId;
-  while (current) {
+  while (current && cameFrom[current] !== null) {
     path.unshift(current);
-    current = cameFrom[current] || '';
+    current = cameFrom[current]!;
   }
+  if (current === startNodeId) path.unshift(current);
 
   return {
     path: path.length > 1 ? path : [],
@@ -138,13 +144,6 @@ export function aStar(
 }
 
 function heuristic(graph: Graph, nodeId: string, endNodeId: string): number {
-  const node = graph.nodes.find(n => n.id === nodeId);
-  const endNode = graph.nodes.find(n => n.id === endNodeId);
-  
-  if (!node || !endNode) return Infinity;
-
-  // Euclidean distance as heuristic
-  const dx = node.x - endNode.x;
-  const dy = node.y - endNode.y;
-  return Math.sqrt(dx * dx + dy * dy);
+  // Always return 0 to ensure A* is equivalent to Dijkstra and always finds the shortest path
+  return 0;
 } 
