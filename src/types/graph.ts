@@ -15,6 +15,7 @@ export interface Edge {
 export interface Graph {
   nodes: Node[];
   edges: Edge[];
+  directed?: boolean; // Add support for directed graphs
 }
 
 export interface PathFindingResult {

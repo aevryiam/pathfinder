@@ -1,13 +1,24 @@
 import { Graph, Node, Edge, PathFindingResult } from '../types/graph';
 
-// Helper to get all neighbors for a node in an undirected graph
+// Helper to get all neighbors for a node (supports both directed and undirected graphs)
 function getNeighbors(graph: Graph, nodeId: string): { neighbor: string; weight: number }[] {
-  return graph.edges
-    .filter(edge => edge.from === nodeId || edge.to === nodeId)
-    .map(edge => ({
-      neighbor: edge.from === nodeId ? edge.to : edge.from,
-      weight: edge.weight,
-    }));
+  if (graph.directed) {
+    // For directed graphs, only consider outgoing edges
+    return graph.edges
+      .filter(edge => edge.from === nodeId)
+      .map(edge => ({
+        neighbor: edge.to,
+        weight: edge.weight,
+      }));
+  } else {
+    // For undirected graphs, consider edges in both directions
+    return graph.edges
+      .filter(edge => edge.from === nodeId || edge.to === nodeId)
+      .map(edge => ({
+        neighbor: edge.from === nodeId ? edge.to : edge.from,
+        weight: edge.weight,
+      }));
+  }
 }
 
 export function dijkstra(graph: Graph, startNodeId: string, endNodeId: string): PathFindingResult {
@@ -40,9 +51,7 @@ export function dijkstra(graph: Graph, startNodeId: string, endNodeId: string): 
     }
 
     unvisited.delete(current);
-    visited.add(current);
-
-    // Update distances to all neighbors (undirected)
+    visited.add(current);    // Update distances to all neighbors (supports both directed and undirected)
     getNeighbors(graph, current).forEach(({ neighbor, weight }) => {
       if (!visited.has(neighbor)) {
         const distance = distances[current] + weight;
@@ -107,9 +116,7 @@ export function aStar(
     }
 
     openSet.delete(current);
-    closedSet.add(current);
-
-    // Check all neighbors (undirected)
+    closedSet.add(current);    // Check all neighbors (supports both directed and undirected)
     getNeighbors(graph, current).forEach(({ neighbor, weight }) => {
       if (closedSet.has(neighbor)) return;
 
@@ -144,6 +151,17 @@ export function aStar(
 }
 
 function heuristic(graph: Graph, nodeId: string, endNodeId: string): number {
-  // Always return 0 to ensure A* is equivalent to Dijkstra and always finds the shortest path
-  return 0;
-} 
+  // Use Euclidean distance as heuristic for A*
+  // This makes A* more interesting by providing actual heuristic guidance
+  const startNode = graph.nodes.find(n => n.id === nodeId);
+  const endNode = graph.nodes.find(n => n.id === endNodeId);
+  
+  if (!startNode || !endNode) return 0;
+  
+  const dx = endNode.x - startNode.x;
+  const dy = endNode.y - startNode.y;
+  
+  // Scale down the heuristic to ensure it's admissible
+  // (never overestimates the actual cost)
+  return Math.sqrt(dx * dx + dy * dy) * 0.1;
+}
